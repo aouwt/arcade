@@ -15,6 +15,7 @@
 		fputc ('\n', stderr); \
 		exit (1); \
 	}
+#define rnd(range)	((rand () / float (RAND_MAX)) * range)
 
 #define MASK	0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000
 
@@ -23,6 +24,8 @@
 #define CIRC_RADIUS_MIN	100
 #define CIRC_RADIUS_MAX	((SCR_HEIGHT * 0.5) - 100)
 #define CENTER_SCREEN	{ SCR_WIDTH / 2, SCR_HEIGHT / 2 }
+
+#define RAD_MAX	(2 * M_PI)
 
 typedef struct {
 	float x = 0;
@@ -50,12 +53,6 @@ struct {
 struct {
 	SDL_Surface *surface;
 } Bkg;
-
-
-typedef struct {
-	CCoord vel;
-	Sprite s;
-} Beam;
 
 void ProcessEvent (SDL_JoyAxisEvent axis) {
 	switch (axis.axis) {
@@ -157,6 +154,15 @@ namespace SDL {
 }
 
 
+class Beam {
+	Sprite sprite;
+	CCoord vel;
+
+	Beam (void) {
+		this -> vel.d = rnd (RAD_MAX);
+		this -> vel.r = rnd (1);
+		
+
 void DefaultOrigin (Sprite *sprite) {
 	sprite -> origin.x = sprite -> surface -> w / 2;
 	sprite -> origin.y = sprite -> surface -> h / 2;
@@ -169,13 +175,12 @@ void PlaceSprite (Sprite *sprite) {
 	sprite -> pos.y = (SCR_HEIGHT / 2) + (cosf (sprite -> cpos.d) * sprite -> cpos.r);
 	
 	SDL_Rect rect = {
-		sprite -> pos.x + sprite -> origin.x,
-		sprite -> pos.y + sprite -> origin.y
+		Sint16 (sprite -> pos.x + sprite -> origin.x),
+		Sint16 (sprite -> pos.y + sprite -> origin.y)
 	};
 	
 	SDL_BlitSurface (sprite -> surface, NULL, SDL::Screen, &rect);
 }
-
 
 
 int main (void) {

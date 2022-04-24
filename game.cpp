@@ -3,6 +3,9 @@
 
 #define FRAME_RATE	30
 
+#define MAX_BEAMS	100
+#define PLAYER_RADIUS	8
+#define BEAM_THICKNESS	8
 
 
 #include <SDL.h>
@@ -39,7 +42,7 @@ typedef struct {
 
 typedef struct {
 	Coord origin;
-	SDL_Surface *surface;
+	SDL_Surface *surface = NULL;
 	Coord pos;
 	CCoord cpos;
 } Sprite;
@@ -153,16 +156,6 @@ namespace SDL {
 	}
 }
 
-
-class Beam {
-	Sprite sprite;
-	CCoord vel;
-
-	Beam (void) {
-		this -> vel.d = rnd (RAD_MAX);
-		this -> vel.r = rnd (1);
-		
-
 void DefaultOrigin (Sprite *sprite) {
 	sprite -> origin.x = sprite -> surface -> w / 2;
 	sprite -> origin.y = sprite -> surface -> h / 2;
@@ -183,14 +176,68 @@ void PlaceSprite (Sprite *sprite) {
 }
 
 
+class Beam {
+	private:
+		CCoord vel;
+		unsigned int breaktime;
+		Sprite sprite;
+
+	public:
+		Beam (void) {
+			vel.d = (rnd (1) - 0.5) / 100.0;
+			vel.r = rnd (1) + .5;
+			
+			sprite.cpos.d = rnd (RAD_MAX);
+			sprite.cpos.r = 0;
+			breaktime = rnd (10000);
+			
+			
+			SDL_FreeSurface (sprite.surface);
+			
+			sprite.surface = SDL_CreateRGBSurface (
+				SDL_SWSURFACE,
+				BEAM_THICKNESS, BEAM_THICKNESS,
+				32, MASK
+			);
+			
+			SDL_FillRect (sprite.surface, NULL, 0xFF000000);
+		}
+		
+		void Draw (void) {
+			if (breaktime) {
+				breaktime --;
+				return;
+			}
+			
+			sprite.cpos.d += vel.d;
+			sprite.cpos.r += vel.r;
+			PlaceSprite (&sprite);
+			
+			if (sprite.cpos.r >= CIRC_RADIUS_MAX)
+				*this = Beam (); // reinit (memory leaks?)
+		}
+		
+		bool Collision (void) {
+			return sqrt (pow (sprite.pos.x - Player.s.pos.x, 2) + pow (sprite.pos.y - Player.s.pos.y, 2)) < PLAYER_RADIUS;
+		}
+};
+
+
+
 int main (void) {
+	Beam *beam = new Beam [MAX_BEAMS];
+	size_t beams = 0;
 	SDL::Init ();
+	
 	Player.s.cpos = { 0, CIRC_RADIUS_DEF };
 	Player.vel = { 0, 0 };
 	while (true) {
+		for (size_t i = 0; i != 100; i ++) {
+			beam [i].Draw ();
+		}
+		
 		Player.s.cpos.r += Player.vel.y;
 		Player.s.cpos.d += Player.vel.x;
-		
 		
 		if (Player.s.cpos.r > CIRC_RADIUS_MAX)
 			Player.s.cpos.r = CIRC_RADIUS_MAX;

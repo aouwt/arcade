@@ -5,10 +5,13 @@
 
 #define MAX_BEAMS	100
 #define PLAYER_RADIUS	8
-#define BEAM_THICKNESS	8
+#define BEAM_THICKNESS	64
 
+#define FONTPATH	"/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+#define FONTSZ	24
 
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <math.h>
 
 
@@ -30,17 +33,17 @@
 
 #define RAD_MAX	(2 * M_PI)
 
-typedef struct {
+typedef struct Coord {
 	float x = 0;
 	float y = 0;
 } Coord;
 
-typedef struct {
+typedef struct CCoord {
 	float d = 0;
 	float r = 0;
 } CCoord;
 
-typedef struct {
+typedef struct Sprite {
 	Coord origin;
 	SDL_Surface *surface = NULL;
 	Coord pos;
@@ -48,14 +51,28 @@ typedef struct {
 } Sprite;
 
 
-struct {
+struct Player {
 	Sprite s;
 	Coord vel;
 } Player;
 
-struct {
+struct Bkg {
 	SDL_Surface *surface;
 } Bkg;
+
+struct Score {
+	SDL_Surface *surface;
+	long current = 0;
+	long maximum = 0;
+	bool changed = true;
+} Score;
+
+
+struct CurLevel {
+	CCoord beamvel = { .001, 1 };
+	size_t beamcnt = 1;
+	long nextlv = 0;
+} CurLevel;
 
 void ProcessEvent (SDL_JoyAxisEvent axis) {
 	switch (axis.axis) {
@@ -73,6 +90,7 @@ namespace SDL {
 	SDL_Surface *Screen;
 	SDL_Event Events;
 	SDL_Joystick *Stick;
+	TTF_Font *Font;
 	
 	
 	namespace SurfaceGen {
@@ -95,6 +113,16 @@ namespace SDL {
 			
 			SDL_FillRect (::Bkg.surface, NULL, 0xFFFFFFFF);
 		}
+		
+		//void Score (void) {
+		//	::Score.surface.score = TTF_RenderText_Solid (Font, "Score: ", { 0, 0, 0, 0 });
+		//}
+	}
+	
+	void render_score (void) {
+		char str [64];
+		snprintf (str, 64, "%li / %li", Score.current, Score.maximum);
+		Score.surface = TTF_RenderText_Solid (Font, str, { 0, 0, 0, 0 });
 	}
 	
 	void wait_frame (void) {
@@ -134,11 +162,17 @@ namespace SDL {
 		
 		frame_done ();
 		
+		if (Score.changed) {
+			render_score ();
+			Score.changed = false;
+		}
 		SDL_BlitSurface (Bkg.surface, NULL, Screen, NULL);
+		SDL_BlitSurface (Score.surface, NULL, Screen, NULL);
 	}
 	
 	void Init (void) {
 		_ (SDL_Init (SDL_INIT_EVERYTHING), "Could not initialize SDL!");
+		_ (TTF_Init (), "Could not initialize SDL_ttf!");
 		
 		_ (NULL == (
 			Screen = SDL_SetVideoMode (
@@ -146,6 +180,10 @@ namespace SDL {
 				32, SDL_SWSURFACE/* | SDL_FULLSCREEN */
 			)
 		), "Could not initialize frame buffer!");
+		
+		_ (NULL == (
+			Font = TTF_OpenFont (FONTPATH, FONTSZ)
+		), "Could not open font \"%s\" at size %i", FONTPATH, FONTSZ)
 		
 		_ (NULL == (
 			Stick = SDL_JoystickOpen (0)
@@ -169,7 +207,8 @@ void PlaceSprite (Sprite *sprite) {
 	
 	SDL_Rect rect = {
 		Sint16 (sprite -> pos.x + sprite -> origin.x),
-		Sint16 (sprite -> pos.y + sprite -> origin.y)
+		Sint16 (sprite -> pos.y + sprite -> origin.y),
+		0, 0
 	};
 	
 	SDL_BlitSurface (sprite -> surface, NULL, SDL::Screen, &rect);
@@ -183,24 +222,13 @@ class Beam {
 		Sprite sprite;
 
 	public:
-		Beam (void) {
+		void reinit (void) {
 			vel.d = (rnd (1) - 0.5) / 100.0;
 			vel.r = rnd (1) + .5;
 			
 			sprite.cpos.d = rnd (RAD_MAX);
 			sprite.cpos.r = 0;
 			breaktime = rnd (10000);
-			
-			
-			SDL_FreeSurface (sprite.surface);
-			
-			sprite.surface = SDL_CreateRGBSurface (
-				SDL_SWSURFACE,
-				BEAM_THICKNESS, BEAM_THICKNESS,
-				32, MASK
-			);
-			
-			SDL_FillRect (sprite.surface, NULL, 0xFF000000);
 		}
 		
 		void Draw (void) {
@@ -213,12 +241,28 @@ class Beam {
 			sprite.cpos.r += vel.r;
 			PlaceSprite (&sprite);
 			
-			if (sprite.cpos.r >= CIRC_RADIUS_MAX)
-				*this = Beam (); // reinit (memory leaks?)
+			if (sprite.cpos.r >= CIRC_RADIUS_MAX) {
+				Score.current += vel.r * 100;
+				Score.changed = true;
+				reinit ();
+			}
 		}
 		
 		bool Collision (void) {
 			return sqrt (pow (sprite.pos.x - Player.s.pos.x, 2) + pow (sprite.pos.y - Player.s.pos.y, 2)) < PLAYER_RADIUS;
+		}
+		
+		Beam (void) {
+			SDL_FreeSurface (sprite.surface);
+			
+			sprite.surface = SDL_CreateRGBSurface (
+				SDL_SWSURFACE,
+				BEAM_THICKNESS, BEAM_THICKNESS,
+				32, MASK
+			);
+			
+			SDL_FillRect (sprite.surface, NULL, 0xFF000000 | rand ());
+			reinit ();
 		}
 };
 
@@ -226,16 +270,12 @@ class Beam {
 
 int main (void) {
 	Beam *beam = new Beam [MAX_BEAMS];
-	size_t beams = 0;
+	//size_t beams = 0;
 	SDL::Init ();
 	
 	Player.s.cpos = { 0, CIRC_RADIUS_DEF };
 	Player.vel = { 0, 0 };
 	while (true) {
-		for (size_t i = 0; i != 100; i ++) {
-			beam [i].Draw ();
-		}
-		
 		Player.s.cpos.r += Player.vel.y;
 		Player.s.cpos.d += Player.vel.x;
 		
@@ -246,6 +286,18 @@ int main (void) {
 			Player.s.cpos.r = CIRC_RADIUS_MIN;
 		
 		PlaceSprite (&Player.s);
+		
+		
+		for (size_t i = 0; i != 100; i ++) {
+			beam [i].Draw ();
+			
+			if (beam [i].Collision ()) {
+				Score.current -= 10; //(Score.current / 16) - 10;
+				Score.changed = true;
+				beam [i].reinit ();
+			}
+		}
+		
 		
 		SDL::Frame ();
 	}

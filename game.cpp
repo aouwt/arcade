@@ -64,7 +64,7 @@ struct Bkg {
 	SDL_Surface *surface;
 } Bkg;
 
-unsigned int Tokens = 0;
+int Tokens = 0;
 
 
 void ProcessEvent (SDL_JoyAxisEvent axis) {

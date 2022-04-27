@@ -8,6 +8,8 @@
 #define BEAM_MAXTHICKNESS	16
 #define BEAM_MINTHICKNESS	8
 
+#define BUTTON_TOKEN	9
+
 #define FONTPATH	"/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
 #define FONTSZ	24
 
@@ -19,7 +21,7 @@
 #define _(func, ...)	\
 	if (func) {	\
 		fprintf (stderr, __VA_ARGS__); \
-		fputc ('\n', stderr); \
+		fprintf (stderr, " (%i)\n", __LINE__); \
 		exit (1); \
 	}
 #define rnd(range)	((rand () / float (RAND_MAX)) * range)
@@ -62,6 +64,9 @@ struct Bkg {
 	SDL_Surface *surface;
 } Bkg;
 
+unsigned int Tokens = 0;
+
+
 void ProcessEvent (SDL_JoyAxisEvent axis) {
 	switch (axis.axis) {
 		case 0: // X
@@ -69,6 +74,15 @@ void ProcessEvent (SDL_JoyAxisEvent axis) {
 			break;
 		case 1: // Y
 			Player.vel.y = axis.value / (32768.0 * 0.5);
+			break;
+	}
+}
+
+void ProcessEvent (SDL_JoyButtonEvent btn) {
+	printf ("%i\n", btn.button);
+	switch (btn.button) {
+		case BUTTON_TOKEN:
+			Tokens ++;
 			break;
 	}
 }
@@ -140,7 +154,7 @@ namespace SDL {
 		Score::surface = TTF_RenderText_Solid (Font, str, { 0, 0, 0, 0 });
 	}
 	
-	void wait_frame (void) {
+	void NextFrame (void) {
 		static unsigned long last = 0;
 		unsigned long now = SDL_GetTicks ();
 		int diff;
@@ -150,12 +164,17 @@ namespace SDL {
 	
 	
 	void end (void) {
+		TTF_CloseFont (Font);
+		TTF_Quit ();
+		SDL_FreeSurface (Score::surface);
+		SDL_FreeSurface (Bkg.surface);
+		SDL_FreeSurface (Player.s.surface);
 		SDL_Quit ();
 		exit (0);
 	}
 	
 	
-	void frame_done (void) {
+	void PollEvents (void) {
 		while (SDL_PollEvent (&Events)) {
 			switch (Events.type) {
 				case SDL_QUIT: end ();
@@ -164,18 +183,21 @@ namespace SDL {
 				case SDL_JOYAXISMOTION: ::ProcessEvent (Events.jaxis);
 					break;
 				
-			//	case SDL_JOYBUTTONDOWN: ::ProcessEvent (Events.jbutton);
-			//		break;
+				case SDL_JOYBUTTONDOWN: ::ProcessEvent (Events.jbutton);
+					break;
 			}
 		}
-		
-		wait_frame ();
 	}
 	
 	void Frame (void) {
+		PollEvents ();
+		NextFrame ();
+	}
+	
+	void GameFrame (void) {
 		SDL_Flip (Screen);
 		
-		frame_done ();
+		Frame ();
 		
 		if (Score::changed) {
 			render_score ();
@@ -186,9 +208,15 @@ namespace SDL {
 	}
 	
 	void Init (void) {
+		fprintf (stderr, "Initializing...");
+		
+		fprintf (stderr, "\n\tSDL...");
 		_ (SDL_Init (SDL_INIT_EVERYTHING), "Could not initialize SDL!");
+		
+		fprintf (stderr, "Done\n\tSDL_ttf...");
 		_ (TTF_Init (), "Could not initialize SDL_ttf!");
 		
+		fprintf (stderr, "Done\n\tScreen...");
 		_ (NULL == (
 			Screen = SDL_SetVideoMode (
 				SCR_WIDTH, SCR_HEIGHT,
@@ -196,16 +224,20 @@ namespace SDL {
 			)
 		), "Could not initialize frame buffer!");
 		
+		fprintf (stderr, "Done\n\tFont...");
 		_ (NULL == (
 			Font = TTF_OpenFont (FONTPATH, FONTSZ)
 		), "Could not open font \"%s\" at size %i", FONTPATH, FONTSZ)
 		
+		fprintf (stderr, "Done\n\tJoystick...");
 		_ (NULL == (
 			Stick = SDL_JoystickOpen (0)
 		), "Could not open joystick!");
 		
+		fprintf (stderr, "Done\n\tSurfaces...");
 		SurfaceGen::Bkg ();
 		SurfaceGen::Player ();
+		fprintf (stderr, "Done\nStarting game.\n");
 	}
 }
 
@@ -293,7 +325,8 @@ class Beam {
 
 namespace Game {
 	long Run (void) {
-		Beam *beam [MAX_BEAMS];
+		Tokens --;
+		Beam beam [MAX_BEAMS];
 		size_t beams = 1;
 		long long nextbeamat = 10;
 		
@@ -328,7 +361,7 @@ namespace Game {
 					beams ++;
 			}
 			
-			SDL::Frame ();
+			SDL::GameFrame ();
 		}
 		
 		return Score::maximum;
@@ -337,4 +370,11 @@ namespace Game {
 		
 int main (void) {
 	SDL::Init ();
+	
+	for (;;) {
+		while (Tokens == 0) {
+			SDL::Frame ();
+		}
+		Game::Run ();
+	}
 }

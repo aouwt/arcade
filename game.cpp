@@ -79,7 +79,6 @@ void ProcessEvent (SDL_JoyAxisEvent axis) {
 }
 
 void ProcessEvent (SDL_JoyButtonEvent btn) {
-	printf ("%i\n", btn.button);
 	switch (btn.button) {
 		case BUTTON_TOKEN:
 			Tokens ++;
@@ -112,8 +111,67 @@ namespace Score {
 	void Reset (void) {
 		total = maximum = current = 0;
 	}
-};
+}
 
+
+namespace Sound {
+	SDL_AudioSpec AudFmt;
+	
+	typedef struct Audio {
+		size_t len = 0;
+		Uint8 *buf = NULL;
+	} Audio;
+	
+	Audio Current;
+	Audio S440;
+
+	namespace Callback {
+		static void audbuf (void *user, Uint8 *stream, int len) {
+			printf ("hi\n");
+			if (Current.len == 0)
+				return;
+			
+			printf ("hello\n");
+			for (int i = 0; i < len; i ++) {
+				if (Current.len > 0) {
+					Current.len --;
+					Current.buf ++;
+				} else
+					break;
+				
+				stream [i] = *Current.buf;
+			}
+		}
+	}
+	
+	void Build (void) {
+		// 440hz
+		S440.len = AudFmt.freq * .5;
+		S440.buf = new Uint8 [S440.len];
+		
+		for (size_t i = 0; i != S440.len; i ++)
+			S440.buf [i] = (i % (AudFmt.freq / 220)) > (AudFmt.freq / 440) ? 0 : 64;
+	}
+	
+	void Init (void) {
+		SDL_AudioSpec request = {
+			.freq = 44100,
+			.format = AUDIO_U8,
+			.samples = 64,
+			.callback = &Callback::audbuf
+		};
+		
+		_ (SDL_OpenAudio (&request, &AudFmt), "Could not initialize sound!");
+		
+		
+		Build ();
+	}
+	
+	void PlaySound (void) {
+		Current.len = S440.len;
+		Current.buf = S440.buf;
+	}
+}
 
 namespace SDL {
 	SDL_Surface *Screen;
@@ -325,14 +383,16 @@ class Beam {
 
 namespace Game {
 	long Run (void) {
+		SDL_PauseAudio (0);
 		Tokens --;
 		Beam beam [MAX_BEAMS];
 		size_t beams = 1;
+		unsigned int flash = 0;
 		long long nextbeamat = 10;
 		
 		Player.s.cpos = { 0, CIRC_RADIUS_DEF };
 		Player.vel = { 0, 0 };
-		
+			
 		while (Score::current >= 0) {
 			Player.s.cpos.r += Player.vel.y;
 			Player.s.cpos.d += Player.vel.x;
@@ -343,17 +403,24 @@ namespace Game {
 			if (Player.s.cpos.r < CIRC_RADIUS_MIN)
 				Player.s.cpos.r = CIRC_RADIUS_MIN;
 			
-			PlaceSprite (&Player.s);
-			
+			if (!(flash & 1))
+				PlaceSprite (&Player.s);
 			
 			for (size_t i = 0; i != beams; i ++) {
 				beam [i].Draw ();
 				
-				if (beam [i].Collision ()) {
-					Score::Dec (((Score::total / 16) + 10) * (beam [i].diameter / BEAM_MAXTHICKNESS));
-					beam [i].Restart ();
+				if (flash == 0) {
+					if (beam [i].Collision ()) {
+						Score::Dec (((Score::total / 16) + 10) * (beam [i].diameter / BEAM_MAXTHICKNESS));
+						flash = FRAME_RATE * 5;
+						beam [i].Restart ();
+						Sound::PlaySound ();
+					}
 				}
 			}
+			
+			if (flash)
+				flash --;
 			
 			if (Score::total > nextbeamat) {
 				nextbeamat += Score::total;
@@ -364,12 +431,14 @@ namespace Game {
 			SDL::GameFrame ();
 		}
 		
+		SDL_PauseAudio (1);
 		return Score::maximum;
 	}
 }
 		
 int main (void) {
 	SDL::Init ();
+	Sound::Init ();
 	
 	for (;;) {
 		while (Tokens == 0) {

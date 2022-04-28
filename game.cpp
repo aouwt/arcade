@@ -278,6 +278,13 @@ namespace SDL {
 			Score::changed = false;
 		}
 		SDL_BlitSurface (Bkg.surface, NULL, Screen, NULL);
+		{	SDL_Rect rect = {
+				0, 0,
+				((float) Score::current / Score::total) * SCR_WIDTH, 16
+			};
+			SDL_FillRect (Screen, &rect, 0xFFFF00FF);
+		}
+		
 		SDL_BlitSurface (Score::surface, NULL, Screen, NULL);
 	}
 	

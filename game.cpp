@@ -155,7 +155,7 @@ namespace Sound {
 		};
 		
 		_ (SDL_OpenAudio (&request, &AudFmt), "Could not initialize sound!");
-		
+		SDL_PauseAudio (0);
 		
 		Build ();
 	}
@@ -406,7 +406,6 @@ class Beam {
 
 namespace Game {
 	long Run (void) {
-		SDL_PauseAudio (0);
 		Tokens --;
 		Beam beam [MAX_BEAMS];
 		size_t beams = 1;
@@ -467,7 +466,6 @@ namespace Game {
 			SDL::GameFrame ();
 		}
 		
-		SDL_PauseAudio (1);
 		return Score::maximum;
 	}
 }

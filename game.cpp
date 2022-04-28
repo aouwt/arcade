@@ -3,7 +3,7 @@
 
 #define FRAME_RATE	30
 
-#define MAX_BEAMS	100
+#define MAX_BEAMS	1024
 #define PLAYER_RADIUS	8
 #define BEAM_MAXTHICKNESS	16
 #define BEAM_MINTHICKNESS	8
@@ -58,6 +58,7 @@ typedef struct Sprite {
 struct Player {
 	Sprite s;
 	Coord vel;
+	Coord dir;
 } Player;
 
 struct Bkg {
@@ -65,26 +66,6 @@ struct Bkg {
 } Bkg;
 
 int Tokens = 0;
-
-
-void ProcessEvent (SDL_JoyAxisEvent axis) {
-	switch (axis.axis) {
-		case 0: // X
-			Player.vel.x = axis.value / (32768.0 * 100.0);
-			break;
-		case 1: // Y
-			Player.vel.y = axis.value / (32768.0 * 0.5);
-			break;
-	}
-}
-
-void ProcessEvent (SDL_JoyButtonEvent btn) {
-	switch (btn.button) {
-		case BUTTON_TOKEN:
-			Tokens ++;
-			break;
-	}
-}
 
 
 namespace Score {
@@ -109,12 +90,13 @@ namespace Score {
 	}
 	
 	void Reset (void) {
-		total = maximum = current = 0;
+		total = maximum = current = 100;
 	}
 }
 
 
 namespace Sound {
+#define LEN(sec)	(AudFmt.freq * (sec))
 	SDL_AudioSpec AudFmt;
 	
 	typedef struct Audio {
@@ -123,15 +105,17 @@ namespace Sound {
 	} Audio;
 	
 	Audio Current;
-	Audio S440;
+	
+	struct Effect {
+		Audio Damage;
+		Audio Token;
+	} Effect;
 
 	namespace Callback {
 		static void audbuf (void *user, Uint8 *stream, int len) {
-			printf ("hi\n");
 			if (Current.len == 0)
 				return;
 			
-			printf ("hello\n");
 			for (int i = 0; i < len; i ++) {
 				if (Current.len > 0) {
 					Current.len --;
@@ -144,13 +128,22 @@ namespace Sound {
 		}
 	}
 	
-	void Build (void) {
-		// 440hz
-		S440.len = AudFmt.freq * .5;
-		S440.buf = new Uint8 [S440.len];
+	Audio mk_sqr (float freq, unsigned char amp, size_t len, Uint8 *buf) {
+		if (buf == NULL)
+			buf = new Uint8 [len];
 		
-		for (size_t i = 0; i != S440.len; i ++)
-			S440.buf [i] = (i % (AudFmt.freq / 220)) > (AudFmt.freq / 440) ? 0 : 64;
+		for (size_t i = 0; i != len; i ++)
+			buf [i] = ((i % int (AudFmt.freq / (freq / 2))) > (AudFmt.freq / freq)) * amp;
+		
+		return {
+			.len = len,
+			.buf = buf
+		};
+	}
+	
+	void Build (void) {
+		Effect.Damage = mk_sqr (440, 64, LEN (0.5), NULL);
+		Effect.Token = mk_sqr (783.990871963, 127, LEN (0.25), NULL);
 	}
 	
 	void Init (void) {
@@ -167,11 +160,34 @@ namespace Sound {
 		Build ();
 	}
 	
-	void PlaySound (void) {
-		Current.len = S440.len;
-		Current.buf = S440.buf;
+	void PlaySound (Audio *effect) {
+		Current = *effect;
+	}
+#undef LEN
+}
+
+
+void ProcessEvent (SDL_JoyAxisEvent axis) {
+	switch (axis.axis) {
+		case 0: // X
+			Player.dir.x = axis.value / 32768.0;
+			break;
+		case 1: // Y
+			Player.dir.y = axis.value / 32768.0;
+			break;
 	}
 }
+
+void ProcessEvent (SDL_JoyButtonEvent btn) {
+	switch (btn.button) {
+		case BUTTON_TOKEN:
+			Tokens ++;
+			Sound::PlaySound (&Sound::Effect.Token);
+			break;
+	}
+}
+
+
 
 namespace SDL {
 	SDL_Surface *Screen;
@@ -388,12 +404,21 @@ namespace Game {
 		Beam beam [MAX_BEAMS];
 		size_t beams = 1;
 		unsigned int flash = 0;
-		long long nextbeamat = 10;
+		long long nextbeamat = 2;
+		float fuel = 0;
 		
 		Player.s.cpos = { 0, CIRC_RADIUS_DEF };
 		Player.vel = { 0, 0 };
 			
 		while (Score::current >= 0) {
+			Player.vel.x *= 0.9;
+			if (fabs (Player.vel.x) < 0.02)
+				Player.vel.x += Player.dir.x / 100;
+			
+			Player.vel.y *= 0.9;
+			if (fabs (Player.vel.y) < 1)
+				Player.vel.y += Player.dir.y;
+			
 			Player.s.cpos.r += Player.vel.y;
 			Player.s.cpos.d += Player.vel.x;
 			
@@ -411,13 +436,17 @@ namespace Game {
 				
 				if (flash == 0) {
 					if (beam [i].Collision ()) {
-						Score::Dec (((Score::total / 16) + 10) * (beam [i].diameter / BEAM_MAXTHICKNESS));
+						Score::Dec ((Score::total / 4) * (beam [i].diameter / BEAM_MAXTHICKNESS));
 						flash = FRAME_RATE * 5;
 						beam [i].Restart ();
-						Sound::PlaySound ();
+						Sound::PlaySound (&Sound::Effect.Damage);
 					}
 				}
 			}
+			
+			fuel += (abs (Player.dir.x) + abs (Player.dir.y)) / 60;
+			if (fuel > 1)
+				Score::Dec (fuel --);
 			
 			if (flash)
 				flash --;

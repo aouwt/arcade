@@ -444,7 +444,7 @@ namespace Game {
 				}
 			}
 			
-			fuel += (abs (Player.dir.x) + abs (Player.dir.y)) / 60;
+			fuel += (abs (Player.dir.x) + abs (Player.dir.y)) / (FRAME_RATE * 2);
 			if (fuel > 1)
 				Score::Dec (fuel --);
 			

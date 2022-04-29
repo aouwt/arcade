@@ -3,6 +3,10 @@
 #include "global.hpp"
 
 
+_Score::_Score (void) {
+	Reset ();
+}
+
 _Score::~_Score (void) {
 	SDL_FreeSurface (surface);
 }

@@ -78,6 +78,7 @@ class _Score {
 		long maximum = 0;
 		bool changed = true;
 		
+		_Score (void);
 		~_Score (void);
 		
 		void Inc (unsigned int amt);
@@ -137,7 +138,7 @@ class _Game {
 		struct {
 			Sprite s;
 			Coord <float> vel;
-			Coord <signed char> dir;
+			Coord <float> dir;
 		} Player;
 		
 		long Run (void);

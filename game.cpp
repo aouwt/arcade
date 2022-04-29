@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <math.h>
 
 #include "global.hpp"
 
@@ -14,13 +15,13 @@ long _Game::Run (void) {
 	Player.vel = { 0, 0 };
 		
 	while (Score -> current >= 0) {
-		Player.vel.x *= 0.9;
-		if (fabs (Player.vel.x) < 0.02)
-			Player.vel.x += Player.dir.x / 100;
+		Player.vel.x *= 0.99;
+		if (fabs (Player.vel.x) <= 0.02)
+			Player.vel.x += Player.dir.x / 1000;
 		
-		Player.vel.y *= 0.9;
-		if (fabs (Player.vel.y) < 1)
-			Player.vel.y += Player.dir.y;
+		Player.vel.y *= 0.99;
+		if (fabs (Player.vel.y) <= 1)
+			Player.vel.y += Player.dir.y / 2;
 		
 		Player.s.cpos.r += Player.vel.y;
 		Player.s.cpos.d += Player.vel.x;

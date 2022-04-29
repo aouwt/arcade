@@ -116,8 +116,6 @@ class _SDL {
 		SDL_Surface *Screen = NULL;
 		SDL_Surface *Bkg = NULL;
 		
-		bool Exit = false;
-		
 		_SDL (void);
 		~_SDL (void);
 		
@@ -133,8 +131,6 @@ class _SDL {
 
 class _Game {
 	public:
-		int Tokens = 0;
-		
 		struct {
 			Sprite s;
 			Coord <float> vel;
@@ -142,6 +138,7 @@ class _Game {
 		} Player;
 		
 		long Run (void);
+		void Demo (void);
 		void ProcessEvent (SDL_JoyAxisEvent axis);
 		void ProcessEvent (SDL_JoyButtonEvent btn);
 };
@@ -150,3 +147,6 @@ extern _Score *Score;
 extern _Sound *Sound;
 extern _SDL *SDL;
 extern _Game *Game;
+
+extern bool Exit;
+extern unsigned int Tokens;

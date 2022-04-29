@@ -3,6 +3,19 @@
 
 #include "global.hpp"
 
+
+void _Game::Demo (void) {
+	Beam beam [MAX_BEAMS];
+	
+	while (Tokens == 0 && Exit == false) {
+		SDL -> Frame ();
+		Player.s.cpos.d += rndf;
+		
+		for (size_t i = 0; i != MAX_BEAMS; i ++)
+			beam [i].Draw ();
+	}
+}
+
 long _Game::Run (void) {
 	Tokens --;
 	Beam beam [MAX_BEAMS];
@@ -14,7 +27,7 @@ long _Game::Run (void) {
 	Player.s.cpos = { 0, CIRC_RADIUS_DEF };
 	Player.vel = { 0, 0 };
 		
-	while (Score -> current >= 0) {
+	while (Score -> current >= 0 && Exit == false) {
 		Player.vel.x *= 0.99;
 		if (fabs (Player.vel.x) <= 0.02)
 			Player.vel.x += Player.dir.x / 1000;

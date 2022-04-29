@@ -62,12 +62,12 @@ void _SDL::NextFrame (void) {
 void _SDL::Frame (void) {
 	PollEvents ();
 	NextFrame ();
+	
+	SDL_Flip (Screen);
+	SDL_BlitSurface (Bkg, NULL, Screen, NULL);
 }
 
 void _SDL::GameFrame (void) {
-	SDL_Flip (Screen);
-	SDL_Flip (Screen);
-	
 	Frame ();
 	
 	if (Score -> changed) {
@@ -77,8 +77,6 @@ void _SDL::GameFrame (void) {
 		Score -> surface = TTF_RenderText_Solid (Font, str, { 0, 0, 0, 0 });
 		Score -> changed = false;
 	}
-	
-	SDL_BlitSurface (Bkg, NULL, Screen, NULL);
 	
 	{	SDL_Rect rect = {
 			0, 0,

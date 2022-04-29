@@ -1,7 +1,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-#include "game.hpp"
+#include "global.hpp"
 
 
 _SDL::_SDL (void) {

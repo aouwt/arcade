@@ -1,6 +1,6 @@
 #include <SDL.h>
 
-#include "game.hpp"
+#include "global.hpp"
 
 long _Game::Run (void) {
 	Tokens --;

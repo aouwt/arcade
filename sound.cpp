@@ -1,6 +1,6 @@
 #include <SDL.h>
 
-#include "game.hpp"
+#include "global.hpp"
 
 
 void callback (void *p, Uint8 *stream, int len) {

@@ -1,7 +1,7 @@
 #include <SDL.h>
 #include <math.h>
 
-#include "game.hpp"
+#include "global.hpp"
 
 Beam::Beam (void) {
 	diameter = (rndf * BEAM_MAXTHICKNESS) + BEAM_MINTHICKNESS;

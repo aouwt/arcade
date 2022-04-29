@@ -1,7 +1,7 @@
 #include <SDL.h>
 #include <math.h>
 
-#include "game.hpp"
+#include "global.hpp"
 
 Sprite::~Sprite (void) {
 	SDL_FreeSurface (surface); surface = NULL;

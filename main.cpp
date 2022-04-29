@@ -1,4 +1,4 @@
-#include "game.hpp"
+#include "global.hpp"
 
 _SDL *SDL = NULL;
 _Sound *Sound = NULL;
@@ -9,9 +9,10 @@ int main (void) {
 	Game = new _Game;
 	SDL = new _SDL;
 	Sound = new _Sound;
+	Score = new _Score;
 	
 	for (;;) {
-		//while (Game -> Tokens == 0) {
+		while (Game -> Tokens == 0) {
 			SDL -> Frame ();
 			if (SDL -> Exit == true)
 				goto end;
@@ -22,4 +23,5 @@ end:
 	delete Sound;
 	delete SDL;
 	delete Game;
+	delete Score;
 }

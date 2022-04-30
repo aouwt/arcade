@@ -134,7 +134,7 @@ class _Game {
 		struct {
 			Sprite s;
 			Coord <float> vel;
-			Coord <float> dir;
+			Coord <signed short> dir;
 		} Player;
 		
 		long Run (void);

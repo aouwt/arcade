@@ -7,7 +7,7 @@ Beam::Beam (void) {
 	diameter = (rndf * BEAM_MAXTHICKNESS) + BEAM_MINTHICKNESS;
 	
 	sprite.surface = SDL_CreateRGBSurface (
-		SDL_SWSURFACE,
+		SDL_HWSURFACE,
 		diameter, diameter,
 		32, MASK
 	);
@@ -51,8 +51,9 @@ bool Beam::Collision (void) {
 	if (breaktime)
 		return false;
 	else
-		return sqrt (
-			pow (sprite.pos.x - Game -> Player.s.pos.x, 2) +
-			pow (sprite.pos.y - Game -> Player.s.pos.y, 2)
-		) < diameter;
+		return false;
+		//return sqrt (
+		//	pow (sprite.pos.x - Game -> Player.s.pos.x, 2) +
+		//	pow (sprite.pos.y - Game -> Player.s.pos.y, 2)
+		//) < diameter;
 }

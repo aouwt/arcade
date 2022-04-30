@@ -19,7 +19,6 @@ int main (void) {
 		Score -> Reset ();
 		Game -> Run ();
 	}
-end:
 	delete Sound;
 	delete SDL;
 	delete Game;

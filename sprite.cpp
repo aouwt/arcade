@@ -1,8 +1,7 @@
 #include <SDL.h>
-#include <math.h>
 
 #include "global.hpp"
-
+#include "math.hpp"
 Sprite::~Sprite (void) {
 	SDL_FreeSurface (surface); surface = NULL;
 }
@@ -13,8 +12,8 @@ void Sprite::DefaultOrigin (void) {
 }
 
 void Sprite::Place (void) {
-	pos.x = (SCR_WIDTH / 2) + (sinf (cpos.d) * cpos.r);
-	pos.y = (SCR_HEIGHT/ 2) + (cosf (cpos.d) * cpos.r);
+	pos.x = (SCR_WIDTH / 2) + (sin (cpos.d) * cpos.r);
+	pos.y = (SCR_HEIGHT/ 2) + (cos (cpos.d) * cpos.r);
 	
 	SDL_Rect rect = {
 		Sint16 (pos.x + origin.x),

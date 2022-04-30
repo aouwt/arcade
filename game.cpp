@@ -2,7 +2,7 @@
 #include <math.h>
 
 #include "global.hpp"
-
+#include "math.hpp"
 
 void _Game::Demo (void) {
 	Beam beam [MAX_BEAMS];
@@ -84,10 +84,10 @@ long _Game::Run (void) {
 void _Game::ProcessEvent (SDL_JoyAxisEvent axis) {
 	switch (axis.axis) {
 		case 0: // X
-			Player.dir.x = axis.value / 32768.0;
+			Player.dir.x = axis.value / 32767.0;
 			break;
 		case 1: // Y
-			Player.dir.y = axis.value / 32768.0;
+			Player.dir.y = axis.value / 32767.0;
 			break;
 	}
 }

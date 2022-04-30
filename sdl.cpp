@@ -1,10 +1,10 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <stdio.h>
-#include <unistd.h>
+/*#include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <linux/kd.h>
+#include <linux/kd.h>*/
 
 #include "global.hpp"
 
@@ -16,12 +16,12 @@ _SDL::_SDL (void) {
 	fprintf (stderr, "Done\n\tTTF...");
 	_ (TTF_Init (), "Could not initialize SDL_ttf!");
 	
-	fprintf (stderr, "Done\n\tFB Setup...");
+	/*fprintf (stderr, "Done\n\tFB Setup...");
 	{	int fd = open ("/dev/tty0", O_RDONLY);
 		_ (fd < 0, "Could not open frame buffer!");
 		ioctl (fd, KDSETMODE, KD_TEXT);
 		close (fd);
-	}
+	}*/
 	
 	fprintf (stderr, "Done\n\tFB init...");
 	_ (NULL == (
@@ -36,10 +36,10 @@ _SDL::_SDL (void) {
 		Font = TTF_OpenFont (FONTPATH, FONTSZ)
 	), "Could not open font \"%s\" at size %i", FONTPATH, FONTSZ)
 	
-	fprintf (stderr, "Done\n\tJoystick...");
+	/*fprintf (stderr, "Done\n\tJoystick...");
 	_ (NULL == (
 		Stick = SDL_JoystickOpen (0)
-	), "Could not open joystick!");
+	), "Could not open joystick!");*/
 	
 	fprintf (stderr, "Done\n");
 	
@@ -72,11 +72,11 @@ _SDL::~_SDL (void) {
 }
 
 void _SDL::NextFrame (void) {
-	static unsigned long last = 0;
+	/*static unsigned long last = 0;
 	unsigned long now = SDL_GetTicks ();
 	int diff;
 	if ((diff = last + (FRAME_RATE / 1000) - now) > 0)
-		SDL_Delay (diff);
+		SDL_Delay (diff);*/
 }
 
 void _SDL::Frame (void) {

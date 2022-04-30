@@ -51,9 +51,8 @@ bool Beam::Collision (void) {
 	if (breaktime)
 		return false;
 	else
-		return false;
-		//return sqrt (
-		//	pow (sprite.pos.x - Game -> Player.s.pos.x, 2) +
-		//	pow (sprite.pos.y - Game -> Player.s.pos.y, 2)
-		//) < diameter;
+		return sqrt (
+			pow (sprite.pos.x - Game -> Player.s.pos.x, 2) +
+			pow (sprite.pos.y - Game -> Player.s.pos.y, 2)
+		) < diameter;
 }

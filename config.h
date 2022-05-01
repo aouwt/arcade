@@ -8,7 +8,7 @@
 #define BEAM_MAXTHICKNESS	16
 #define BEAM_MINTHICKNESS	8
 
-#define BUTTON_TOKEN	9
+#define BUTTON_TOKEN	8
 
 #define FONTPATH	"/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 #define FONTSZ	24

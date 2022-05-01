@@ -65,6 +65,7 @@ long _Game::Run (void) {
 	DemoOn = false;
 	Tokens --;
 	long long nextbeamat = 2;
+	Player.flash = FRAME_RATE * 5;
 	
 	Player.s.cpos = { 0, CIRC_RADIUS_DEF };
 	Player.vel = { 0, 0 };
@@ -105,8 +106,8 @@ long _Game::Run (void) {
 			}
 		}
 		
-		// fuel += (abs (Player.dir.x) + abs (Player.dir.y)) / (FRAME_RATE * 10);
-		Score -> Dec ((abs (Player.dir.x) + abs (Player.dir.y)) * Score -> current * 0.001);
+		if (Player.flash)
+			Score -> Dec ((abs (Player.dir.x) + abs (Player.dir.y)) * Score -> current * 0.001);
 		
 		if (Score -> total > nextbeamat) {
 			nextbeamat += Score -> total;

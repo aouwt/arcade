@@ -1,15 +1,19 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_thread.h>
 #include <math.h>
+#include <pthread.h>
 
 #include "config.h"
 
-#define _(func, ...)	\
+#define _(stage, func, ...)	\
+	fprintf (stderr, "\t" stage "..."); \
 	if (func) {	\
 		fprintf (stderr, __VA_ARGS__); \
 		fprintf (stderr, " (%i)\n", __LINE__); \
 		exit (1); \
-	}
+	} \
+	fprintf (stderr, "Done\n");
 #define rnd(range)	((rand () / float (RAND_MAX)) * range)
 #define rndf	(rand () / float (RAND_MAX))
 
@@ -56,6 +60,7 @@ class Beam {
 		~Beam (void);
 		
 		void Draw (void);
+		void Frame (void);
 		void Restart (void);
 		
 		bool Collision (void);
@@ -135,12 +140,25 @@ class _Game {
 			Sprite s;
 			Coord <float> vel;
 			Coord <signed short> dir;
+			unsigned int flash = 0;
 		} Player;
+		
+		_Game (void);
+		~_Game (void);
 		
 		long Run (void);
 		void Demo (void);
 		void ProcessEvent (SDL_JoyAxisEvent axis);
 		void ProcessEvent (SDL_JoyButtonEvent btn);
+		
+		pthread_cond_t Thread_Cond;
+		pthread_mutex_t Thread_Mutex;
+		SDL_Thread *Thread_Thread;
+		bool Thread_Run;
+		
+		Beam beam [MAX_BEAMS];
+		size_t Beams = 1;
+		bool DemoOn;
 };
 
 extern _Score *Score;

@@ -1,3 +1,5 @@
+#include <X11/Xlib.h>
+
 #include "global.hpp"
 
 _SDL *SDL = NULL;
@@ -9,6 +11,8 @@ bool Exit = false;
 unsigned int Tokens = 0;
 
 int main (void) {
+	XInitThreads ();
+	
 	Game = new _Game;
 	SDL = new _SDL;
 	Sound = new _Sound;

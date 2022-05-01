@@ -3,7 +3,7 @@
 
 #define FRAME_RATE	60
 
-#define MAX_BEAMS	16
+#define MAX_BEAMS	1024
 #define PLAYER_RADIUS	8
 #define BEAM_MAXTHICKNESS	16
 #define BEAM_MINTHICKNESS	8

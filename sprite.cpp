@@ -13,8 +13,8 @@ void Sprite::DefaultOrigin (void) {
 }
 
 void Sprite::Place (void) {
-	pos.x = (SCR_WIDTH / 2) + (fastsin (cpos.d) * cpos.r);
-	pos.y = (SCR_HEIGHT/ 2) + (fastcos (cpos.d) * cpos.r);
+	pos.x = (SCR_WIDTH / 2) + (fastsin <float> (cpos.d) * cpos.r);
+	pos.y = (SCR_HEIGHT/ 2) + (fastcos <float> (cpos.d) * cpos.r);
 	
 	SDL_Rect rect = {
 		Sint16 (pos.x + origin.x),

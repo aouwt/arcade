@@ -10,11 +10,13 @@
 
 
 _SDL::_SDL (void) {
-	fprintf (stderr, "\tSDL...");
-	_ (SDL_Init (SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK), "Could not initialize SDL!");
+	_ ("SDL",
+		SDL_Init (SDL_INIT_EVERYTHING),
+	"Could not initialize SDL!");
 	
-	fprintf (stderr, "Done\n\tTTF...");
-	_ (TTF_Init (), "Could not initialize SDL_ttf!");
+	_ ("TTF",
+		TTF_Init (),
+	"Could not initialize SDL_ttf!");
 	
 	/*fprintf (stderr, "Done\n\tFB Setup...");
 	{	int fd = open ("/dev/tty0", O_RDONLY);
@@ -23,25 +25,27 @@ _SDL::_SDL (void) {
 		close (fd);
 	}*/
 	
-	fprintf (stderr, "Done\n\tFB init...");
-	_ (NULL == (
-		Screen = SDL_SetVideoMode (
-			SCR_WIDTH, SCR_HEIGHT,
-			32, SDL_HWSURFACE
-		)
-	), "Could not initialize frame buffer!");
+	_ ("FB",
+		NULL == (
+			Screen = SDL_SetVideoMode (
+				SCR_WIDTH, SCR_HEIGHT,
+				32, SDL_HWSURFACE
+			)
+		),
+	"Could not initialize frame buffer!");
 	
-	fprintf (stderr, "Done\n\tFont...");
-	_ (NULL == (
-		Font = TTF_OpenFont (FONTPATH, FONTSZ)
-	), "Could not open font \"%s\" at size %i", FONTPATH, FONTSZ)
+	_ ("Font",
+		NULL == (
+			Font = TTF_OpenFont (FONTPATH, FONTSZ)
+		),
+	"Could not open font \"%s\" at size %i", FONTPATH, FONTSZ)
 	
-	/*fprintf (stderr, "Done\n\tJoystick...");
-	_ (NULL == (
-		Stick = SDL_JoystickOpen (0)
-	), "Could not open joystick!");*/
-	
-	fprintf (stderr, "Done\n");
+	_ ("Joystick",
+		NULL == (
+			Stick = SDL_JoystickOpen (0)
+		),
+	"Could not open joystick!");
+
 	
 	// player surface
 	Game -> Player.s.surface = SDL_CreateRGBSurface (
@@ -72,16 +76,16 @@ _SDL::~_SDL (void) {
 }
 
 void _SDL::NextFrame (void) {
-	/*static unsigned long last = 0;
+	static unsigned long last = 0;
 	unsigned long now = SDL_GetTicks ();
-	int diff;
-	if ((diff = last + (FRAME_RATE / 1000) - now) > 0)
-		SDL_Delay (diff);*/
+	int diff = (last + (1000 / FRAME_RATE)) - now;
+	if (diff > 10)
+		SDL_Delay (diff);
+	last = now;
 }
 
 void _SDL::Frame (void) {
 	PollEvents ();
-	NextFrame ();
 	
 	SDL_Flip (Screen);
 	SDL_BlitSurface (Bkg, NULL, Screen, NULL);

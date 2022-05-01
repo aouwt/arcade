@@ -20,8 +20,12 @@ Beam::~Beam (void) {
 	SDL_FreeSurface (sprite.surface); sprite.surface = NULL;
 }
 
-
 void Beam::Draw (void) {
+	if (breaktime == 0)
+		sprite.Place ();
+}
+
+void Beam::Frame (void) {
 	if (breaktime) {
 		if (-- breaktime == 0) {
 			vel.d = (rnd (1) - 0.5) / 1000.0;
@@ -34,8 +38,7 @@ void Beam::Draw (void) {
 	}
 	
 	sprite.cpos.d += vel.d;
-	sprite.cpos.r += vel.r;
-	sprite.Place ();
+	sprite.cpos.r += (vel.r *= 1.01);
 	
 	if (sprite.cpos.r >= SCR_WIDTH / 2) {
 		Score -> Inc (vel.r * 10);

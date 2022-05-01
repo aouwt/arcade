@@ -30,7 +30,10 @@ _Sound::_Sound (void) {
 		.userdata = (void *) this
 	};
 	
-	_ (SDL_OpenAudio (&request, &AudFmt), "Could not initialize sound!");
+	_ ("Sound",
+		SDL_OpenAudio (&request, &AudFmt),
+	"Could not initialize sound!");
+	
 	SDL_PauseAudio (0);
 	
 	// Build sounds

@@ -12,5 +12,5 @@ inline T fastcos (T x) noexcept {
 
 template <typename T>
 inline T fastsin (T x) noexcept {
-	return fastcos (x + (M_PI / 2.0));
+	return fastcos <T> (x + (M_PI / 2.0));
 }

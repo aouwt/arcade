@@ -38,14 +38,10 @@ int draw_thread (void *obj) {
 
 
 _Game::_Game (void) {
-	pthread_cond_init (&Thread_Cond, NULL);
-	pthread_mutex_init (&Thread_Mutex, NULL);
-	
 	Thread_Thread = SDL_CreateThread (draw_thread, this);
 }
 
 _Game::~_Game (void) {
-	pthread_cond_destroy (&Thread_Cond);
 }
 
 void _Game::Demo (void) {
@@ -69,16 +65,15 @@ long _Game::Run (void) {
 	DemoOn = false;
 	Tokens --;
 	long long nextbeamat = 2;
-	float fuel = 0;
 	
 	Player.s.cpos = { 0, CIRC_RADIUS_DEF };
 	Player.vel = { 0, 0 };
 	Beams = 10;
 		
 	while (Score -> current >= 0 && Exit == false) {
-		//pthread_mutex_lock (&Thread_Mutex);
+		pthread_mutex_lock (&Thread_Mutex);
 		pthread_cond_signal (&Thread_Cond);
-		//pthread_mutex_unlock (&Thread_Mutex);
+		pthread_mutex_unlock (&Thread_Mutex);
 		
 		Player.vel.x *= 0.99;
 		if (fabs (Player.vel.x) <= 0.02)
@@ -115,8 +110,9 @@ long _Game::Run (void) {
 		
 		if (Score -> total > nextbeamat) {
 			nextbeamat += Score -> total;
-			if (Beams < MAX_BEAMS)
-				Beams *= 1.1;
+			Beams *= 1.1;
+			if (Beams >= MAX_BEAMS)
+				Beams = MAX_BEAMS;
 		}
 		
 		SDL -> NextFrame ();

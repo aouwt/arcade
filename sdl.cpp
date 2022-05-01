@@ -104,7 +104,7 @@ void _SDL::GameFrame (void) {
 	
 	{	SDL_Rect rect = {
 			0, 0,
-			((float) Score -> current / Score -> total) * SCR_WIDTH, 16
+			Uint16 (((float) Score -> current / Score -> total) * SCR_WIDTH), 16
 		};
 		SDL_FillRect (Screen, &rect, 0xFFFF00FF);
 	}

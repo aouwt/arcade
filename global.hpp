@@ -151,10 +151,9 @@ class _Game {
 		void ProcessEvent (SDL_JoyAxisEvent axis);
 		void ProcessEvent (SDL_JoyButtonEvent btn);
 		
-		pthread_cond_t Thread_Cond;
-		pthread_mutex_t Thread_Mutex;
+		pthread_cond_t Thread_Cond = PTHREAD_COND_INITIALIZER;
+		pthread_mutex_t Thread_Mutex = PTHREAD_MUTEX_INITIALIZER;
 		SDL_Thread *Thread_Thread;
-		bool Thread_Run;
 		
 		Beam beam [MAX_BEAMS];
 		size_t Beams = 1;

@@ -97,7 +97,7 @@ void _SDL::GameFrame (void) {
 	if (Score -> changed) {
 		// Make score surface
 		char str [64];
-		snprintf (str, 64, "%li / %lli", Score -> current, Score -> total);
+		snprintf (str, 64, "%li / %li", Score -> current, Score -> maximum);
 		Score -> surface = TTF_RenderText_Solid (Font, str, { 0, 0, 0, 0 });
 		Score -> changed = false;
 	}

@@ -106,8 +106,7 @@ long _Game::Run (void) {
 			}
 		}
 		
-		if (Player.flash)
-			Score -> Dec ((abs (Player.dir.x) + abs (Player.dir.y)) * Score -> current * 0.001);
+		Score -> Dec ((abs (Player.dir.x) + abs (Player.dir.y)) * Score -> current * 0.001);
 		
 		if (Score -> total > nextbeamat) {
 			nextbeamat += Score -> total;

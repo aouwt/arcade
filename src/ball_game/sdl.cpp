@@ -10,6 +10,8 @@
 
 
 _SDL::_SDL (void) {
+	//SystemDrv::Init (INIT_SDL | INIT_FB | INIT_TTF | INIT_JOYSTICK);
+	/*
 	_ ("SDL",
 		SDL_Init (SDL_INIT_EVERYTHING),
 	"Could not initialize SDL!");
@@ -17,7 +19,7 @@ _SDL::_SDL (void) {
 	_ ("TTF",
 		TTF_Init (),
 	"Could not initialize SDL_ttf!");
-	
+	*/
 	/*fprintf (stderr, "Done\n\tFB Setup...");
 	{	int fd = open ("/dev/tty0", O_RDONLY);
 		_ (fd < 0, "Could not open frame buffer!");

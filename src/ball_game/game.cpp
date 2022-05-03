@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "global.hpp"
-#include "math.hpp"
+#include <fastmath.hpp>
 
 
 int draw_thread (void *obj) {

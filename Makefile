@@ -1,9 +1,8 @@
-INCLUDE:=-I./src/include/
 MAKE_O:=-r -no-pie
 
-CFLAGS:=-Ofast -Wall -Wextra -Wpedantic -Wno-missing-initializers ${INCLUDE} -std=c++20
-DEPS_FLAGS:=$(shell pkg-config --cflags sdl SDL_ttf)
-DEPS_LIBS:=$(shell pkg-config --libs sdl SDL_ttf) -lm -lX11
+CFLAGS:=-I./src/include -Ofast -march=native -mtune=native -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -std=c++20
+DEPS_FLAGS:=$(shell sdl-config --cflags)
+DEPS_LIBS:=-lm -lX11 -lpthread $(shell sdl-config --libs) -lSDL_ttf
 
 @PHONY:	all clean
 
@@ -12,11 +11,14 @@ all: ./arcade
 clean:
 	rm ./obj/*
 
-./arcade: ./obj/ball_game.o ./obj/system.o
-	g++ ./obj/*.o ${CFLAGS} -o ./arcade ${DEPS_LIBS}
+./arcade: ./obj/ball_game.o ./obj/system.o ./obj/main.o
+	g++ ${DEPS} ${CFLAGS} ./obj/*.o -o ./arcade
 
 ./obj/ball_game.o:
-	g++ ./src/ball_game/*.cpp ${MAKE_O} ${CFLAGS} ${DEPS_FLAGS} -o ./obj/ball_game.o
+	g++ ${MAKE_O} ${DEPS_FLAGS} ${CFLAGS} ./src/ball_game/*.c* -o ./obj/ball_game.o
 
 ./obj/system.o:
-	g++ ./src/system/*.cpp ${MAKE_O} ${CFLAGS} ${DEPS_FLAGS} -o ./obj/system.o
+	g++ ${MAKE_O} ${DEPS_FLAGS} ${CFLAGS} ./src/system/*.cpp -o ./obj/system.o
+
+./obj/main.o:
+	g++ ${MAKE_O} ${DEPS_FLAGS} ${CFLAGS} ./src/main.cpp -o ./obj/main.o

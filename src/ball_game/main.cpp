@@ -10,7 +10,7 @@ _Score *Score = NULL;
 bool Exit = false;
 unsigned int Tokens = 0;
 
-int main (void) {
+/*int main (void) {
 	XInitThreads ();
 	
 	Game = new _Game;
@@ -27,4 +27,4 @@ int main (void) {
 	delete SDL;
 	delete Game;
 	delete Score;
-}
+}*/

@@ -8,6 +8,8 @@
 #define INIT_FB	8
 #define INIT_JOYSTICK	16
 
+#define INIT_ALL	255
+
 #define SCREEN_WIDTH	1280
 #define SCREEN_HEIGHT	1024
 
@@ -21,6 +23,7 @@ namespace SystemDrv {
 	extern Param Init (Param param);
 	extern Param DeInit (Param param);
 	extern Param ForceInit (Param param);
+	extern bool NextEvent (SDL_Event *event);
 	
 	extern SDL_Surface *ScreenSurface;
 	extern SDL_AudioSpec AudioSpec;
@@ -28,6 +31,8 @@ namespace SystemDrv {
 	
 	extern void (*AudioCallback) (void *, Uint8*, int);
 	extern void *AudioCallbackData;
+	
+	extern bool Run;
 };
 
 

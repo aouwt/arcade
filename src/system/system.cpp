@@ -16,6 +16,7 @@ SDL_Joystick *SystemDrv::Joystick = NULL;
 void (*SystemDrv::AudioCallback) (void *, Uint8*, int) = NULL;
 void *SystemDrv::AudioCallbackData = NULL;
 
+bool SystemDrv::Run = false;
 
 
 SystemDrv::Param Current = 0;
@@ -123,4 +124,16 @@ SystemDrv::Param SystemDrv::DeInit (SystemDrv::Param param) {
 SystemDrv::Param SystemDrv::ForceInit (SystemDrv::Param param) {
 	DeInit (Current);
 	return Init (param);
+}
+
+bool SystemDrv::NextEvent (SDL_Event *event) {
+	if (SDL_PollEvent (event)) {
+		
+		if (event -> type == SDL_QUIT)
+			SystemDrv::Run = true;
+		
+		return true;
+	
+	} else
+		return false;
 }

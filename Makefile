@@ -1,21 +1,22 @@
-MAKE_O:=-r -no-pie
+MAKE_O=-r -no-pie
 
-CFLAGS:=-pipe -I./src/include -Ofast -march=native -mtune=native -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -std=c++20
-DEPS_FLAGS:=$(shell sdl-config --cflags)
-DEPS_LIBS:=-lm -lX11 -lpthread -lstdc++ $(shell sdl-config --libs) -lSDL_ttf
+CFLAGS=-pipe -I./src/include -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -std=c++20 ${_CFLAGS}
+DEPS_FLAGS=$(shell sdl-config --cflags)
+DEPS_LIBS=-lm -lX11 -lpthread -lstdc++ $(shell sdl-config --libs) -lSDL_ttf
 
-DEPS:=${DEPS_FLAGS} ${DEPS_LIBS}
+DEPS=${DEPS_FLAGS} ${DEPS_LIBS}
+
+all: ./arcade
 
 @PHONY: all clean install uninstall
 
-all: ./arcade
 
 clean:
 	rm -f ./obj/* ./arcade.service
 
 install: ./arcade ./arcade.service
-	cp ./arcade.service $XDG_RUNTIME_DIR/systemd/user/
-	systemctl --user reload-daemon
+	cp ./arcade.service ~/.config/systemd/user/
+	systemctl --user daemon-reload
 	systemctl --user enable arcade.service
 
 uninstall:
@@ -35,14 +36,13 @@ uninstall:
 	echo 'WantedBy=multi-user.target' >> ./arcade.service
 
 ./arcade: ./obj/ball_game.o ./obj/system.o ./obj/main.o
-	cc ${CFLAGS} ${DEPS_LIBS} ./obj/*.o -o ./arcade
+	cc ./obj/*.o ${DEPS} ${CFLAGS} -o ./arcade
 
 ./obj/ball_game.o:
-	cc -x c++ ${MAKE_O} ${CFLAGS} ${DEPS_FLAGS} ./src/ball_game/*.cpp -o ./obj/ball_game.o
+	cc -x c++ ./src/ball_game/*.cpp ${MAKE_O} ${DEPS_FLAGS} ${CFLAGS} -o ./obj/ball_game.o
 
 ./obj/system.o:
-	cc -x c++ ${MAKE_O} ${CFLAGS} ${DEPS_FLAGS} ./src/system/*.cpp -o ./obj/system.o
+	cc -x c++ ./src/system/*.cpp ${MAKE_O} ${DEPS_FLAGS} ${CFLAGS} -o ./obj/system.o
 
 ./obj/main.o:
-	cc -x c++ ${MAKE_O} ${CFLAGS} ${DEPS_FLAGS} ./src/main.cpp -o ./obj/main.o
-
+	cc -x c++ ./src/main.cpp ${MAKE_O} ${DEPS_FLAGS} ${CFLAGS} -o ./obj/main.o

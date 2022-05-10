@@ -21,8 +21,8 @@ install: ./arcade ./arcade.service
 
 uninstall:
 	systemctl --user disable arcade.service
-	rm $XDG_RUNTIME_DIR/systemd/user/arcade.service
-	systemctl --user reload-daemon
+	rm ~/.config/systemd/user/arcade.service
+	systemctl --user daemon-reload
 
 ./arcade.service:
 	> ./arcade.service
@@ -38,11 +38,11 @@ uninstall:
 ./arcade: ./obj/ball_game.o ./obj/system.o ./obj/main.o
 	cc ./obj/*.o ${DEPS} ${CFLAGS} -o ./arcade
 
-./obj/ball_game.o:
+./obj/ball_game.o: ./src/ball_game/*.cpp
 	cc -x c++ ./src/ball_game/*.cpp ${MAKE_O} ${DEPS_FLAGS} ${CFLAGS} -o ./obj/ball_game.o
 
-./obj/system.o:
+./obj/system.o: ./src/system/*.cpp
 	cc -x c++ ./src/system/*.cpp ${MAKE_O} ${DEPS_FLAGS} ${CFLAGS} -o ./obj/system.o
 
-./obj/main.o:
+./obj/main.o: ./src/main.cpp
 	cc -x c++ ./src/main.cpp ${MAKE_O} ${DEPS_FLAGS} ${CFLAGS} -o ./obj/main.o

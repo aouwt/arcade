@@ -13,7 +13,7 @@ int main (void) {
 	SDL_Surface *Screen = ScreenSurface;
 	
 	TTF_Font *Font = TTF_OpenFont (DEFAULT_FONT, 64);
-	//SDL_Surface *InsertTokenSurface = TTF_RenderSurfaceSmooth (
+	SDL_Surface *InsertTokenSurface = TTF_RenderText_Solid (Font, "Insert token", { 0, 0, 0 });
 	
 	while (Run) {
 		
